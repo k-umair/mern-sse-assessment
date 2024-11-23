@@ -17,9 +17,9 @@ class DatabaseService {
   public async connect(): Promise<void> {
     try {
       await mongoose.connect(this.dbURI);
-      console.log("MongoDB connected successfully");
+      console.log("Database connected successfully");
     } catch (error) {
-      console.error("Error connecting to MongoDB:", error);
+      console.error("Error connecting to Database:", error);
       process.exit(0);
     }
   }
