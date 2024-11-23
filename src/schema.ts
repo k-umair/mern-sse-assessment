@@ -1,7 +1,9 @@
 import { GraphQLObjectType, GraphQLSchema } from "graphql";
 
 import { AuthMutations } from "./auth/auth.resolver";
+import { ListingMutations } from "./listings/listing.resolver";
 import { UserQueries, UserMutations } from "./users/users.resolver";
+import { BookingMutations } from "./bookings/booking.resolver";
 
 const rootQuery = new GraphQLObjectType({
   name: "RootQuery",
@@ -15,6 +17,8 @@ const rootMutation = new GraphQLObjectType({
   fields: {
     ...AuthMutations,
     ...UserMutations,
+    ...ListingMutations,
+    ...BookingMutations,
   },
 });
 
