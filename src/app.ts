@@ -3,17 +3,17 @@ import dotenv from "dotenv";
 import helmet from "helmet";
 import morgan from "morgan";
 import express from "express";
+import { Request } from "express";
 import { graphqlHTTP } from "express-graphql";
 import expressPlayground from "graphql-playground-middleware-express";
-import { Request } from "express";
 dotenv.config();
-
-import { authenticateJWT } from "./auth/middlewares/auth.middleware";
 
 const { createHandler } = require("graphql-http/lib/use/express");
 
 import schema from "./schema";
 import DatabaseService from "./config/db.service";
+import { GraphQLContext } from "./types/express";
+import { authenticateJWT } from "./auth/middlewares/auth.middleware";
 
 const app = express();
 
@@ -45,12 +45,18 @@ app.use(authenticateJWT);
 
 app.use(
   "/graphql",
-  graphqlHTTP({
-    schema,
-    graphiql: false,
-    context: ({ req }: { req: Request }) => {
-      return { user: req?.user };
-    },
+  graphqlHTTP(async (req, res) => {
+    const request = req as Request;
+
+    const context: GraphQLContext = {
+      user: request.user,
+    };
+
+    return {
+      schema,
+      graphiql: false,
+      context,
+    };
   })
 );
 

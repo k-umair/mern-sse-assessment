@@ -21,7 +21,5 @@ export const authenticateJWT = (
       next();
     });
   }
-
-  res.status(403).json({ message: "No token provided" });
   next();
 };

@@ -1,13 +1,14 @@
 import { GraphQLString } from "graphql";
 import UserType from "./user.graphql";
 import UserService from "./users.service";
+import { IUser } from "./user.schema";
+import { GraphQLContext } from "../types/express";
 
-// Queries
 const UserQueries = {
   getUser: {
     type: UserType,
-    resolve: async (parent: null, args: null, context: any) => {
-      const userId = context.userId;
+    resolve: async (parent: null, args: null, context: GraphQLContext) => {
+      const userId = context?.user?._id;
       if (!userId) {
         throw new Error("Unauthorized");
       }
@@ -16,7 +17,6 @@ const UserQueries = {
   },
 };
 
-// Mutations
 const UserMutations = {
   updateUser: {
     type: UserType,
@@ -32,9 +32,9 @@ const UserMutations = {
         email,
         role,
       }: { username: string; email: string; role: string },
-      context: any
+      context: GraphQLContext
     ) => {
-      const userId = context.userId; // Assuming userId is stored in context after auth
+      const userId = context?.user?._id;
       if (!userId) {
         throw new Error("Unauthorized");
       }
@@ -42,14 +42,20 @@ const UserMutations = {
     },
   },
 
-  // Only Admin user and the user himself can delete their account.
   deleteUser: {
     type: GraphQLString,
     resolve: async (parent: null, args: null, context: any) => {
-      const userId = context.userId; // Assuming userId is stored in context after auth
+      const userId = context?._id;
+      const isAdmin = context?.isAdmin;
+
       if (!userId) {
         throw new Error("Unauthorized");
       }
+
+      if (isAdmin) {
+        throw new Error("Only admin is allowed to perform this operation.");
+      }
+
       return await UserService.deleteUser(userId);
     },
   },

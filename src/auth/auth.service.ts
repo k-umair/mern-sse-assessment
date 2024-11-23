@@ -48,7 +48,6 @@ class AuthService {
     }
 
     const tokenClaim = removePassword(user);
-    console.log(tokenClaim);
     const token = jwtService.signToken(tokenClaim);
 
     return { token };
