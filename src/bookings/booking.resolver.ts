@@ -8,6 +8,7 @@ import {
 } from "graphql";
 import BookingType from "./booking.graphql";
 import BookingService from "./booking.service";
+import { GraphQLContext } from "../types/express";
 
 const BookingMutations = {
   // Mutation for booking an order
@@ -19,9 +20,9 @@ const BookingMutations = {
     resolve: async (
       parent: null,
       { listingId }: { listingId: string },
-      context: any
+      context: GraphQLContext
     ) => {
-      const buyerId = context.userId; // Assuming JWT has been decoded to get the buyerId
+      const buyerId = context?.user?._id;
       if (!buyerId) {
         throw new Error("Unauthorized");
       }
@@ -44,9 +45,9 @@ const BookingMutations = {
         rating,
         review,
       }: { bookingId: string; rating: number; review: string },
-      context: any
+      context: GraphQLContext
     ) => {
-      const buyerId = context.userId;
+      const buyerId = context?.user?._id;
       if (!buyerId) {
         throw new Error("Unauthorized");
       }

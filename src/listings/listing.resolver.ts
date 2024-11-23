@@ -2,6 +2,8 @@ import { GraphQLID, GraphQLString, GraphQLFloat } from "graphql";
 
 import ListingType from "./listing.graphql";
 import ListingService from "./listing.service";
+import { IUser } from "../users/user.schema";
+import { GraphQLContext } from "../types/express";
 
 const ListingMutations = {
   createListing: {
@@ -18,9 +20,9 @@ const ListingMutations = {
         description,
         price,
       }: { title: string; description: string; price: number },
-      context: any
+      context: GraphQLContext
     ) => {
-      const sellerId = context.userId; // Assuming JWT has been decoded to get the sellerId
+      const sellerId = context?.user?._id;
       if (!sellerId) {
         throw new Error("Unauthorized");
       }
@@ -48,9 +50,9 @@ const ListingMutations = {
         description,
         price,
       }: { id: string; title: string; description: string; price: number },
-      context: any
+      context: GraphQLContext
     ) => {
-      const sellerId = context.userId;
+      const sellerId = context?.user?._id;
       if (!sellerId) {
         throw new Error("Unauthorized");
       }
@@ -67,8 +69,12 @@ const ListingMutations = {
     args: {
       id: { type: GraphQLID },
     },
-    resolve: async (parent: null, { id }: { id: string }, context: any) => {
-      const sellerId = context.userId;
+    resolve: async (
+      parent: null,
+      { id }: { id: string },
+      context: GraphQLContext
+    ) => {
+      const sellerId = context?.user?._id;
       if (!sellerId) {
         throw new Error("Unauthorized");
       }
@@ -81,8 +87,12 @@ const ListingMutations = {
     args: {
       id: { type: GraphQLID },
     },
-    resolve: async (parent: null, { id }: { id: string }, context: any) => {
-      const sellerId = context.userId;
+    resolve: async (
+      parent: null,
+      { id }: { id: string },
+      context: GraphQLContext
+    ) => {
+      const sellerId = context?.user?._id;
       if (!sellerId) {
         throw new Error("Unauthorized");
       }
