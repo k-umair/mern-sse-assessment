@@ -5,7 +5,10 @@ import morgan from "morgan";
 import express from "express";
 import { graphqlHTTP } from "express-graphql";
 import expressPlayground from "graphql-playground-middleware-express";
+import { Request } from "express";
 dotenv.config();
+
+import { authenticateJWT } from "./auth/middlewares/auth.middleware";
 
 const { createHandler } = require("graphql-http/lib/use/express");
 
@@ -38,7 +41,19 @@ app.use(
   })
 );
 
-app.use("/graphql", graphqlHTTP({ schema, graphiql: false }));
+app.use(authenticateJWT);
+
+app.use(
+  "/graphql",
+  graphqlHTTP({
+    schema,
+    graphiql: false,
+    context: ({ req }: { req: Request }) => {
+      return { user: req?.user };
+    },
+  })
+);
+
 app.get("/playground", expressPlayground({ endpoint: "/graphql" }));
 
 async function startApp() {
