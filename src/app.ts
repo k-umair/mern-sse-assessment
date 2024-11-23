@@ -1,19 +1,26 @@
 import cors from "cors";
+import dotenv from "dotenv";
 import helmet from "helmet";
 import morgan from "morgan";
-import dotenv from "dotenv";
 import express from "express";
-import schema from "./schema";
-
-import DatabaseService from "./config/db.service";
+import { graphqlHTTP } from "express-graphql";
+import expressPlayground from "graphql-playground-middleware-express";
+dotenv.config();
 
 const { createHandler } = require("graphql-http/lib/use/express");
 
-dotenv.config();
+import schema from "./schema";
+import DatabaseService from "./config/db.service";
 
 const app = express();
 
+app.use(express.json());
+
 app.use(morgan("common"));
+
+const databaseService = DatabaseService.getInstance(
+  String(process.env.MONGODB_URL)
+);
 
 // USE HELMET AND CORS MIDDLEWARES
 app.use(
@@ -31,32 +38,27 @@ app.use(
   })
 );
 
-app.use(express.json());
+app.use("/graphql", graphqlHTTP({ schema, graphiql: false }));
+app.get("/playground", expressPlayground({ endpoint: "/graphql" }));
 
-// DB CONNECTION
-const databaseService = DatabaseService.getInstance(
-  String(process.env.MONGODB_URL)
-);
+async function startApp() {
+  try {
+    await databaseService.connect();
 
-(async () => {
-  await databaseService.connect();
-})();
+    app.all("/graphql", createHandler({ schema }));
 
-// Create and use the GraphQL handler.
-app.all(
-  "/graphql",
-  createHandler({
-    schema: schema,
-  })
-);
+    const PORT = process.env.PORT || 4500;
+    app.listen(PORT, () => {
+      console.log(`Backend server is running at port ${PORT}`);
+      console.log(`GraphQL Server running at http://localhost:${PORT}/graphql`);
+      console.log(`Playground at http://localhost:${PORT}/playground`);
+    });
+  } catch (error) {
+    console.error(error);
+    process.exit(1);
+  }
+}
 
-// Start backend server
-const PORT = process.env.PORT || 8500;
-
-// Check if it's not a test environment before starting the server
-
-app.listen(PORT, () => {
-  console.log(`Backend server is running at port ${PORT}`);
-});
+startApp();
 
 export default app;

@@ -1,31 +1,29 @@
-import { GraphQLObjectType, GraphQLSchema } from "graphql";
-import { UserQueries, UserMutations } from './users/users.resolver'
+import { GraphQLList, GraphQLObjectType, GraphQLSchema } from "graphql";
+import { AuthMutations } from "./auth/auth.resolver";
+import UserType from "./users/user.graphql";
 
 const rootQuery = new GraphQLObjectType({
-    name: 'RootQuery',
-    fields: {
-        user: {
-            type: UserQueries,
-            resolve: (parent, args) => { } // Add Root Resolver If Necessary
-        }
-        // Todo: Add More Resolvers here for each of the defined modules
-    }
-})
+  name: "RootQuery",
+  fields: {
+    users: {
+      type: new GraphQLList(UserType),
+      resolve: async () => {
+        return [{ id: "1", username: "exampleUser" }];
+      },
+    },
+  },
+});
 
 const rootMutation = new GraphQLObjectType({
-    name: 'RootMutation',
-    fields: {
-        user: {
-            type: UserMutations,
-            resolve: (parent, args) => { }
-        }
-        // TodoL Add More Mutations Resolvers here for each of the defined modules
-    }
-})
+  name: "RootMutation",
+  fields: {
+    ...AuthMutations,
+  },
+});
 
 const schema = new GraphQLSchema({
-    query: rootQuery,
-    mutation: rootMutation,
-})
+  query: rootQuery,
+  mutation: rootMutation,
+});
 
 export default schema;
